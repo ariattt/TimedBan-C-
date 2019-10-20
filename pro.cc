@@ -5,12 +5,17 @@
 #include <vector>
 #include <boost/algorithm/string.hpp>
 #include <regex>
+#include <chrono>
+#include <ctime>
+#include <thread>         // std::this_thread::sleep_for
+
+
 using namespace std;
 
 vector<string> clean_sites(int argc, char** argv){
     
     vector<string> sites;
-    for(size_t i=1;i<argc;i++)
+    for(size_t i=2;i<argc;i++)
         sites.push_back(argv[i]);
     
 
@@ -76,7 +81,28 @@ vector<string> update_content(const vector<string> content, const vector<string>
     
 }
 
+void update_hosts(const vector<string> content){
+    
+    ofstream hosts;
+    hosts.open ("/etc/hosts");
+    
+    for(string s : content){
+        hosts << s <<endl;
+    }
+
+    hosts.close();
+}
+
+uint64_t lock_time = 0;
+
 int main(int argc, char** argv){
+
+    if(argc <= 2){
+        cout<<"need to specify lock time and target sites\n";
+        return 0;
+    }
+    
+    lock_time = stoul(argv[1]);
 
     vector<string> target_sites = clean_sites(argc, argv);
 
@@ -93,6 +119,7 @@ int main(int argc, char** argv){
     while(getline(cur_host, line)){
         content.push_back(line);
     }
+    cur_host.close();
 
     remove_duplicate(content, target_sites);
 
@@ -109,5 +136,17 @@ int main(int argc, char** argv){
     cout<<"*** target sites: \n";
     for(string s : target_sites)
         cout<<s<<endl;
+
+    //note chrono is fishy on mac. mac time is 1000 times faster than other PC. count() return ms in mac, but s in others
+    auto start = std::chrono::system_clock::now();
+    update_hosts(new_content);
+    cout<<"??? "<< (std::chrono::system_clock::now() - start).count() <<endl; 
+    
+    while(((std::chrono::system_clock::now() - start).count())/1000/1000 < lock_time){
+        cout<<"updating host\n current time "<< (std::chrono::system_clock::now() - start).count()/1000/1000 <<endl; 
+        update_hosts(new_content);    
+        std::this_thread::sleep_for (std::chrono::seconds(2));
+    }
+    update_hosts(content); //should put it into destructor so it's always called
 
 }
