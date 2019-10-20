@@ -15,11 +15,11 @@ make ban 3600 youtube.com quora.com
 
 ## Active Development
 WIP:
-    - support more unit, e.g. minutes, hours
-    - handle some signals so it cannot be killed easily
-    - change makefile to make it run in the background
-    - rewrite in other fancier languages, e.g. python/go. C++ is bit of wordy and inconsistent (boost algo to others) here.
-    - upload it to a package manager
+    * support more unit, e.g. minutes, hours
+    * handle some signals so it cannot be killed easily
+    * change makefile to make it run in the background
+    * rewrite in other fancier languages, e.g. python/go. C++ is bit of wordy and inconsistent (boost algo to others) here.
+    * upload it to a package manager
 
 Feel free to suggest any other features you want! 
 
